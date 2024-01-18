@@ -64,19 +64,35 @@ def product_list_api(request):
 def register_order(request):
     try:
         data = request.data
-        order = Order.objects.create(
-            firstname=data['firstname'],
-            lastname=data['lastname'],
-            address=data['address'],
-            phonenumber=data['phonenumber']
-        )
-        for product in data['products']:
-            ProductOrder.objects.create(
-                order=order,
-                product=Product.objects.get(id=product['product']),
-                amount=product['quantity']
+        if (
+            'products' in data
+            and type(data['products']) is list
+            and len(data['products']) > 0
+        ):
+            order = Order.objects.create(
+                firstname=data['firstname'],
+                lastname=data['lastname'],
+                address=data['address'],
+                phonenumber=data['phonenumber']
             )
-    except ValueError:
-        pass
-    return Response(data)
-
+            for product in data['products']:
+                ProductOrder.objects.create(
+                    order=order,
+                    product=Product.objects.get(id=product['product']),
+                    amount=product['quantity']
+                )
+            return Response(data)
+        else:
+            raise TypeError
+    except (AssertionError, TypeError):
+        if 'products' not in data:
+            message = 'products: Обязательное поле.'
+            return Response(message)
+        elif type(data['products']) is not list:
+            message = (
+                f'products: Ожидался list со значениями, '
+                f'но был получен {type(data["products"])}.'
+            )
+        elif not len(data['products']) > 0:
+            message = 'products: Этот список не может быть пустым.'
+        return Response(message)
