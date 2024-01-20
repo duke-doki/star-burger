@@ -131,17 +131,15 @@ class Order(models.Model):
     )
     lastname = models.CharField(
         'Фамилия',
-        max_length=50,
-        blank=True
+        max_length=50
     )
     address = models.CharField(
         'адрес',
         max_length=100,
-        blank=True,
     )
     phonenumber = PhoneNumberField(
         'Номер телефона',
-        blank=True, db_index=True
+        db_index=True
     )
 
     class Meta:
@@ -159,7 +157,7 @@ class ProductOrder(models.Model):
         related_name='order_products',
         verbose_name='продукт',
     )
-    amount = models.PositiveIntegerField(
+    quantity = models.PositiveIntegerField(
         verbose_name='Количество продукта',
         default=1
     )
