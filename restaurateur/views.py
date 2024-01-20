@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Sum, F
 from django.shortcuts import redirect, render
 from django.views import View
 from django.urls import reverse_lazy
@@ -92,7 +93,9 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    orders = Order.objects.all()
+    orders = Order.objects.annotate(
+        total_cost=Sum(F('products__quantity') * F('products__product__price'))
+    )
     return render(request, template_name='order_items.html', context={
         'order_items': orders
     })
