@@ -119,3 +119,4 @@ class OrderAdmin(admin.ModelAdmin):
         'phonenumber',
     ]
     inlines = [OrderAdminInline]
+
