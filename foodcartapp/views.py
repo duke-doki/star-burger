@@ -1,11 +1,12 @@
 import json
 
-import phonenumbers
 from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
+
 from .models import Product, Order, ProductOrder
 
 
@@ -97,6 +98,6 @@ def register_order(request):
             product=Product.objects.get(id=product['product'].id),
             quantity=product['quantity']
         )
-    return Response({
-        'application_id': order.id,
-    })
+    content = JSONRenderer().render(serializer.data)
+    pretty_content = json.loads(content.decode('utf-8'))
+    return Response(pretty_content)
