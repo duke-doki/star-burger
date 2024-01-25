@@ -3,7 +3,6 @@
 import os
 import sys
 
-
 def main():
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'star_burger.settings')
     try:
