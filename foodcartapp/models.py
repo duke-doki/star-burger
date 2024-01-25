@@ -149,6 +149,17 @@ class Order(models.Model):
         'Номер телефона',
         db_index=True
     )
+    status = models.CharField(
+        'Статус',
+        max_length=20,
+        choices=(
+            ('Принят', 'Принят'),
+            ('Собирается', 'Собирается'),
+            ('Доставляется', 'Доставляется'),
+            ('Доставлен', 'Доставлен'),
+        ),
+        default='Принят'
+    )
     objects = OrderQuerySet.as_manager()
 
     class Meta:
