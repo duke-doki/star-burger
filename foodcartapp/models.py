@@ -185,6 +185,16 @@ class Order(models.Model):
         null=True,
         blank=True
     )
+    payment = models.CharField(
+        'Способ оплаты',
+        max_length=20,
+        choices=(
+            ('Электронно', 'Электронно'),
+            ('Наличностью', 'Наличностью'),
+        ),
+        db_index=True,
+        null=True,
+    )
     objects = OrderQuerySet.as_manager()
 
     class Meta:

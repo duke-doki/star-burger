@@ -15,6 +15,7 @@
     <tr>
       <th>ID заказа</th>
       <th>Статус</th>
+      <th>Способ оплаты</th>
       <th>Стоимость</th>
       <th>Клиент</th>
       <th>Телефон</th>
@@ -28,6 +29,7 @@
         <tr>
           <td>{{ item.id }}</td>
           <td>{{ item.status }}</td>
+          <td>{{ item.payment }}</td>
           <td>{{ item.total_cost }}</td>
           <td>{{ item.firstname }}</td>
           <td>{{ item.phonenumber }}</td>
