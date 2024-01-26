@@ -132,6 +132,11 @@ class OrderQuerySet(models.QuerySet):
             total_cost=Sum(F('products__quantity') * F('products__price'))
         )
 
+    def with_available_restaurants(self):
+        return self.annotate(
+
+        )
+
 
 class Order(models.Model):
     firstname = models.CharField(
@@ -195,11 +200,30 @@ class Order(models.Model):
         db_index=True,
         null=True,
     )
+    restaurant = models.ForeignKey(
+        Restaurant,
+        related_name='orders',
+        verbose_name="Ресторан",
+        on_delete=models.CASCADE,
+        null=True
+    )
     objects = OrderQuerySet.as_manager()
 
     class Meta:
         verbose_name = 'Заказ'
         verbose_name_plural = 'Заказы'
+
+    def available_restaurants(self):
+        products_in_order = self.products.all()
+        products = [
+            product_in_order.product for product_in_order in products_in_order
+        ]
+        restaurants = set()
+        for product in products:
+            menu_items = product.menu_items.filter(availability=True)
+            for menu_item in menu_items:
+                restaurants.add(menu_item.restaurant.name)
+        return ", ".join(restaurants)
 
     def __str__(self):
         return f"{self.firstname} {self.lastname} - Заказ {self.pk}"
