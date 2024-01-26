@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.db.models import Sum, F
+from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
 
@@ -135,19 +136,22 @@ class OrderQuerySet(models.QuerySet):
 class Order(models.Model):
     firstname = models.CharField(
         'Имя',
-        max_length=50
+        max_length=50,
+        db_index=True
     )
     lastname = models.CharField(
         'Фамилия',
-        max_length=50
+        max_length=50,
+        db_index=True
     )
     address = models.CharField(
         'адрес',
         max_length=100,
+        db_index=True
     )
     phonenumber = PhoneNumberField(
         'Номер телефона',
-        db_index=True
+        db_index=True,
     )
     status = models.CharField(
         'Статус',
@@ -158,12 +162,28 @@ class Order(models.Model):
             ('Доставляется', 'Доставляется'),
             ('Доставлен', 'Доставлен'),
         ),
-        default='Принят'
+        default='Принят',
+        db_index=True
     )
     comment = models.TextField(
         'Комментарий',
         max_length=200,
         blank=True,
+    )
+    created_at = models.DateTimeField(
+        'Дата создания',
+        default=timezone.now,
+        db_index=True
+    )
+    called_at = models.DateTimeField(
+        'Дата звонка',
+        null=True,
+        blank=True
+    )
+    delivered_at = models.DateTimeField(
+        'Дата доставки',
+        null=True,
+        blank=True
     )
     objects = OrderQuerySet.as_manager()
 
@@ -184,14 +204,16 @@ class ProductOrder(models.Model):
     )
     quantity = models.PositiveIntegerField(
         verbose_name='Количество продукта',
-        default=1
+        default=1,
+        db_index=True
     )
     price = models.DecimalField(
         'Цена на момент заказа',
         max_digits=8,
         decimal_places=2,
         validators=[MinValueValidator(0)],
-        default=0
+        default=0,
+        db_index=True
     )
     order = models.ForeignKey(
         Order,
