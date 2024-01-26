@@ -1,9 +1,12 @@
+import requests
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.db.models import Sum, F
 from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 from geopy import distance
+
+from addresses.models import Place
 from fetch_coordinates import fetch_coordinates
 
 
@@ -221,14 +224,54 @@ class Order(models.Model):
             product_in_order.product for product_in_order in products_in_order
         ]
         restaurants = []
+        places = Place.objects.all()
+        restaurant_coordinates = ()
+        client_coordinates = ()
         for product in products:
             menu_items = product.menu_items.filter(
                 availability=True
             ).prefetch_related('restaurant')
             for menu_item in menu_items:
-                restaurant_coordinates = fetch_coordinates(
-                    menu_item.restaurant.name)
-                client_coordinates = fetch_coordinates(self.address)
+                restaurant_name = menu_item.restaurant.name
+                client_address = self.address
+                for place in places:
+                    if place.name == restaurant_name:
+                        restaurant_coordinates = place.lat, place.lng
+                    if place.name == client_address:
+                        client_coordinates = place.lat, place.lng
+                if not restaurant_coordinates:
+                    try:
+                        restaurant_coordinates = fetch_coordinates(
+                            menu_item.restaurant.name)
+                        lat, lng = restaurant_coordinates
+                    except (
+                            requests.ConnectionError,
+                            requests.HTTPError,
+                            requests.RequestException
+                    ) as error:
+                        print(f'{error} occurred')
+                    else:
+                        Place.objects.create(
+                            name=restaurant_name,
+                            lng=lng,
+                            lat=lat,
+                        )
+                if not client_coordinates:
+                    try:
+                        client_coordinates = fetch_coordinates(self.address)
+                        lat, lng = client_coordinates
+                    except (
+                        requests.ConnectionError,
+                        requests.HTTPError,
+                        requests.RequestException
+                    ) as error:
+                        print(f'{error} occurred')
+                    else:
+                        Place.objects.create(
+                            name=client_address,
+                            lng=lng,
+                            lat=lat,
+                        )
                 distance_between = distance.distance(
                     restaurant_coordinates,
                     client_coordinates
@@ -276,3 +319,6 @@ class ProductOrder(models.Model):
         related_name='products',
         null=True
     )
+
+
+
