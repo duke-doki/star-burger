@@ -3,6 +3,8 @@ from django.core.validators import MinValueValidator
 from django.db.models import Sum, F
 from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
+from geopy import distance
+from fetch_coordinates import fetch_coordinates
 
 
 class Restaurant(models.Model):
@@ -214,16 +216,34 @@ class Order(models.Model):
         verbose_name_plural = 'Заказы'
 
     def available_restaurants(self):
-        products_in_order = self.products.all()
+        products_in_order = self.products.select_related('product').all()
         products = [
             product_in_order.product for product_in_order in products_in_order
         ]
-        restaurants = set()
+        restaurants = []
         for product in products:
-            menu_items = product.menu_items.filter(availability=True)
+            menu_items = product.menu_items.filter(
+                availability=True
+            ).prefetch_related('restaurant')
             for menu_item in menu_items:
-                restaurants.add(menu_item.restaurant.name)
-        return ", ".join(restaurants)
+                restaurant_coordinates = fetch_coordinates(
+                    menu_item.restaurant.name)
+                client_coordinates = fetch_coordinates(self.address)
+                distance_between = distance.distance(
+                    restaurant_coordinates,
+                    client_coordinates
+                ).km
+                restaurants.append({
+                    'name': menu_item.restaurant.name,
+                    'distance': distance_between
+                })
+        sorted_restaurants = sorted(restaurants, key=lambda r: r['distance'])
+        unique_restaurants = []
+        for restaurant in sorted_restaurants:
+            if restaurant not in unique_restaurants:
+                unique_restaurants.append(restaurant)
+        return ", ".join(
+            [f"{r['name']} - {r['distance']} km" for r in unique_restaurants])
 
     def __str__(self):
         return f"{self.firstname} {self.lastname} - Заказ {self.pk}"
