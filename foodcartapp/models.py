@@ -294,7 +294,6 @@ class ProductOrder(models.Model):
         max_digits=8,
         decimal_places=2,
         validators=[MinValueValidator(0)],
-        default=0,
         db_index=True
     )
     order = models.ForeignKey(
