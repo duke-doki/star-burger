@@ -10,9 +10,11 @@ class Place(models.Model):
     )
     lng = models.FloatField(
         'Долгота',
-        null=True
+        null=True,
+        blank=True
     )
     lat = models.FloatField(
         'Широта',
-        null=True
+        null=True,
+        blank=True
     )
