@@ -225,68 +225,53 @@ class Order(models.Model):
         ]
         restaurants = []
         places = Place.objects.all()
-        restaurant_coordinates = ()
-        client_coordinates = ()
+
         for product in products:
             menu_items = product.menu_items.filter(
-                availability=True
-            ).prefetch_related('restaurant')
+                availability=True).prefetch_related('restaurant')
+
             for menu_item in menu_items:
                 restaurant_name = menu_item.restaurant.name
                 client_address = self.address
-                for place in places:
-                    if place.name == restaurant_name:
-                        restaurant_coordinates = place.lat, place.lng
-                    if place.name == client_address:
-                        client_coordinates = place.lat, place.lng
+                restaurant_coordinates = next(
+                    ((place.lat, place.lng) for place in places if
+                     place.name == restaurant_name), None)
+                client_coordinates = next(
+                    ((place.lat, place.lng) for place in places if
+                     place.name == client_address), None)
+
                 if not restaurant_coordinates:
                     try:
-                        restaurant_coordinates = fetch_coordinates(
-                            menu_item.restaurant.name)
-                        lat, lng = restaurant_coordinates
-                    except (
-                            requests.ConnectionError,
-                            requests.HTTPError,
-                            requests.RequestException
-                    ) as error:
+                        lat, lng = fetch_coordinates(restaurant_name)
+                        Place.objects.create(name=restaurant_name, lng=lng,
+                                             lat=lat)
+                        restaurant_coordinates = lat, lng
+                    except (requests.ConnectionError, requests.HTTPError,
+                            requests.RequestException) as error:
                         print(f'{error} occurred')
-                    else:
-                        Place.objects.create(
-                            name=restaurant_name,
-                            lng=lng,
-                            lat=lat,
-                        )
+
                 if not client_coordinates:
                     try:
-                        client_coordinates = fetch_coordinates(self.address)
-                        lat, lng = client_coordinates
-                    except (
-                        requests.ConnectionError,
-                        requests.HTTPError,
-                        requests.RequestException
-                    ) as error:
+                        lat, lng = fetch_coordinates(client_address)
+                        Place.objects.create(name=client_address, lng=lng,
+                                             lat=lat)
+                        client_coordinates = lat, lng
+                    except (requests.ConnectionError, requests.HTTPError,
+                            requests.RequestException) as error:
                         print(f'{error} occurred')
-                    else:
-                        Place.objects.create(
-                            name=client_address,
-                            lng=lng,
-                            lat=lat,
-                        )
-                distance_between = distance.distance(
-                    restaurant_coordinates,
-                    client_coordinates
-                ).km
-                restaurants.append({
-                    'name': menu_item.restaurant.name,
-                    'distance': distance_between
-                })
-        sorted_restaurants = sorted(restaurants, key=lambda r: r['distance'])
-        unique_restaurants = []
-        for restaurant in sorted_restaurants:
-            if restaurant not in unique_restaurants:
-                unique_restaurants.append(restaurant)
-        return ", ".join(
-            [f"{r['name']} - {r['distance']} km" for r in unique_restaurants])
+
+                if restaurant_coordinates and client_coordinates:
+                    distance_between = distance.distance(
+                        restaurant_coordinates, client_coordinates).km
+                    restaurants.append({'name': restaurant_name,
+                                        'distance': distance_between})
+
+        unique_restaurants = {r['name']: r['distance'] for r in restaurants}
+        sorted_restaurants = sorted(unique_restaurants.items(),
+                                    key=lambda x: x[1])
+
+        return ", ".join([f"{name} - {distance} km" for name, distance in
+                          sorted_restaurants])
 
     def __str__(self):
         return f"{self.firstname} {self.lastname} - Заказ {self.pk}"
