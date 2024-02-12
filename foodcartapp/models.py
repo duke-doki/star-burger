@@ -201,9 +201,10 @@ class Order(models.Model):
         choices=(
             ('Электронно', 'Электронно'),
             ('Наличностью', 'Наличностью'),
+            ('Не указано', 'Не указано')
         ),
         db_index=True,
-        null=True,
+        default='Не указано',
     )
     restaurant = models.ForeignKey(
         Restaurant,
