@@ -287,7 +287,6 @@ class ProductOrder(models.Model):
     )
     quantity = models.PositiveIntegerField(
         verbose_name='Количество продукта',
-        default=0,
         db_index=True
     )
     price = models.DecimalField(
