@@ -1,13 +1,14 @@
+import json
+
 from django.db import transaction
 from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
-
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
+from rest_framework.serializers import ModelSerializer
 
-
-from .models import Product
-from .serializers import OrderSerializer
+from .models import Product, Order, ProductOrder
 
 
 def banners_list_api(request):
@@ -60,6 +61,36 @@ def product_list_api(request):
         'ensure_ascii': False,
         'indent': 4,
     })
+
+
+class ProductOrderSerializer(ModelSerializer):
+    class Meta:
+        model = ProductOrder
+        fields = ['quantity', 'product']
+
+
+class OrderSerializer(ModelSerializer):
+    products = ProductOrderSerializer(many=True, allow_empty=False)
+
+    class Meta:
+        model = Order
+        fields = [
+            'firstname',
+            'lastname',
+            'address',
+            'phonenumber',
+            'products'
+        ]
+
+    def create(self, validated_data):
+        products_data = validated_data.pop('products')
+        order = Order.objects.create(**validated_data)
+        for product_data in products_data:
+            ProductOrder.objects.create(
+                order=order,
+                **product_data
+            )
+        return order
 
 
 @api_view(['POST'])
