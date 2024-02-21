@@ -86,9 +86,13 @@ class OrderSerializer(ModelSerializer):
         products_data = validated_data.pop('products')
         order = Order.objects.create(**validated_data)
         for product_data in products_data:
+            product_here = Product.objects.select_for_update().get(
+                id=product_data['product'].id)
             ProductOrder.objects.create(
                 order=order,
-                **product_data
+                product=product_here,
+                quantity=product_data['quantity'],
+                price=product_here.price
             )
         return order
 
