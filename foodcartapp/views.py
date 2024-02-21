@@ -82,26 +82,23 @@ class OrderSerializer(ModelSerializer):
             'products'
         ]
 
+    def create(self, validated_data):
+        products_data = validated_data.pop('products')
+        order = Order.objects.create(**validated_data)
+        for product_data in products_data:
+            ProductOrder.objects.create(
+                order=order,
+                **product_data
+            )
+        return order
+
 
 @api_view(['POST'])
 def register_order(request):
     serializer = OrderSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     with transaction.atomic():
-        order = Order.objects.create(
-            firstname=serializer.validated_data['firstname'],
-            lastname=serializer.validated_data['lastname'],
-            address=serializer.validated_data['address'],
-            phonenumber=serializer.validated_data['phonenumber']
-        )
-        for product in serializer.validated_data['products']:
-            product_here = Product.objects.select_for_update().get(id=product['product'].id)
-            ProductOrder.objects.create(
-                order=order,
-                product=product_here,
-                quantity=product['quantity'],
-                price=product_here.price
-            )
+        serializer.save()
     content = JSONRenderer().render(serializer.data)
     pretty_content = json.loads(content.decode('utf-8'))
     return Response(pretty_content)
