@@ -103,6 +103,4 @@ def register_order(request):
     serializer.is_valid(raise_exception=True)
     with transaction.atomic():
         serializer.save()
-    content = JSONRenderer().render(serializer.data)
-    pretty_content = json.loads(content.decode('utf-8'))
-    return Response(pretty_content)
+    return Response(serializer.data)
