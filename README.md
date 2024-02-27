@@ -168,6 +168,15 @@ DB_PASSWORD=starburger
 python manage.py migrate
 ```
 
+Удалите конфликтующие данные:
+```bash
+python manage.py shell
+```
+```
+>>> from django.contrib.contenttypes.models import ContentType
+>>> ContentType.objects.all().delete()
+```
+
 Перенесите данные из `sqlite_data.json`:
 ```bash
 python manage.py loaddata sqlite_data.json
