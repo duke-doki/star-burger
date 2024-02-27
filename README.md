@@ -155,6 +155,24 @@ Parcel будет следить за файлами в каталоге `bundle
 ROLLBAR_TOKEN=b84d5f016f614449
 ```
 
+## Как подключить базу данных Postgres
+[Создайте базу данных и пользователя.](https://www.digitalocean.com/community/tutorials/how-to-use-postgresql-with-your-django-application-on-ubuntu-22-04)
+Добавьте в .env файл имя БД, пользователя и пароль:
+```
+DB_NAME=starburger_database
+DB_USER=starburger_user
+DB_PASSWORD=starburger
+```
+Перенесите миграции:
+```bash
+python manage.py migrate
+```
+
+Перенесите данные из `sqlite_data.json`:
+```bash
+python manage.py loaddata sqlite_data.json
+```
+
 ## Цели проекта
 
 Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org). За основу был взят код проекта [FoodCart](https://github.com/Saibharath79/FoodCart).
