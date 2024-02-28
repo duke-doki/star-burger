@@ -182,6 +182,13 @@ python manage.py shell
 python manage.py loaddata sqlite_data.json
 ```
 
+## Как быстро обновить код на сервере
+
+Запустите:
+```bash
+deploy_star-burger.sh
+```
+
 ## Цели проекта
 
 Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org). За основу был взят код проекта [FoodCart](https://github.com/Saibharath79/FoodCart).
