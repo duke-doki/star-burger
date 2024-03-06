@@ -43,11 +43,11 @@ MIDDLEWARE = [
     'rollbar.contrib.django.middleware.RollbarNotifierMiddlewareExcluding404',
 ]
 
-DEV = env.bool('DEV', True)
+DEV_NAME = env.str('DEV_NAME', 'development')
 
 ROLLBAR = {
     'access_token': env.str('ROLLBAR_TOKEN', ''),
-    'environment': 'development' if DEV else 'production',
+    'environment': DEV_NAME,
     'code_version': '1.0',
     'root': BASE_DIR,
 }
