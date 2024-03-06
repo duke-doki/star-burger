@@ -13,7 +13,7 @@ pip install -r requirements.txt
 
 python3 manage.py migrate
 
-nvm use 16.16.0
+nvm install 16.16.0
 
 npm ci --dev
 
