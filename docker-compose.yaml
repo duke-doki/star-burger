@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  django:
+    build:
+      context: .
+      dockerfile: ./docker/backend/Dockerfile
+    container_name: django_container
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/opt/star-burger
+      - static_volume:/opt/star-burger/staticfiles
+      - media_volume:/opt/star-burger/media
+    depends_on:
+      - db
+
+  node:
+    build:
+      context: .
+      dockerfile: ./docker/frontend/Dockerfile
+    container_name: node_container
+    volumes:
+      - ./bundles:/opt/star-burger/bundles
+    depends_on:
+      - django
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  static_volume:
+  media_volume:
+  db_data:
