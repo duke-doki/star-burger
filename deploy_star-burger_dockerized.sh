@@ -6,11 +6,11 @@ git pull
 docker compose down
 docker compose up -d --build
 
-docker compose exec django_container python manage.py migrate
+docker compose exec django python manage.py migrate
 
-docker compose exec django_container python manage.py collectstatic --no-input
+docker compose exec django python manage.py collectstatic --no-input
 
-docker compose restart django_container
+docker compose restart django
 
 set -a
 [ -f .env ] && . .env
