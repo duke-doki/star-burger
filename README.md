@@ -185,11 +185,46 @@ python manage.py shell
 python manage.py loaddata sqlite_data.json
 ```
 
+
+
+## Докерезированный деплой
+
+Соберите Docker-контейнеры:
+
+```bash
+docker compose up -d
+```
+
+Выполните миграции и соберите статику:
+
+```bash
+docker compose exec django python manage.py migrate
+docker compose exec django python manage.py collectstatic --no-input
+```
+
+Откройте проект в браузере: перейдите на http://localhost:8080 для локальной машины
+и на ваш домен (например, https://burger-el-padrino.ru/) в случае с сервером.
+
+Для остановки контейнеров используйте:
+
+```bash
+docker compose down
+```
+
 ## Как быстро обновить код на сервере
+
+### Без докера
 
 Запустите:
 ```bash
 deploy_star-burger.sh
+```
+
+### С докером
+
+Запустите:
+```bash
+deploy_star-burger_dockerized.sh
 ```
 
 ## Цели проекта
